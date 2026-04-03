@@ -7,11 +7,12 @@ CHAPTER_SYSTEM_PROMPT = """You are a technical writer creating a chapter for a m
 Write in a clear, accessible style. Use precise technical language.
 Include code examples when they illustrate key concepts.
 Do NOT include any preamble like "Here is..." — just output the requested content directly."""
+DEFAULT_MODEL = "gemini-3.1-flash-lite-preview"
 
 class GeminiBackend:
     """Google Gemini API backend (using google-genai SDK)."""
 
-    def __init__(self, api_key: str, model_name: str = "gemini-3.1-flash-lite-preview"):
+    def __init__(self, api_key: str, model_name: str = DEFAULT_MODEL):
         self.client = genai.Client(api_key=api_key)
         self.model_name = model_name
         self.name = f"Gemini ({model_name})"
@@ -24,6 +25,11 @@ class GeminiBackend:
                     model=self.model_name,
                     contents=full_prompt,
                 )
+                if not response.text:
+                    raise RuntimeError(
+                        f"Gemini returned an empty response. "
+                        f"The prompt may have been blocked by safety filters."
+                    )
                 return response.text
             except Exception as e:
                 err = str(e)
@@ -41,7 +47,7 @@ class GeminiBackend:
 def create_backend(provider: str, api_key: str, model_name: str = None):
     """Factory for LLM backends."""
     if provider == "gemini":
-        return GeminiBackend(api_key, model_name or "gemini-3.1-flash-lite-preview")
+        return GeminiBackend(api_key, model_name or DEFAULT_MODEL)
     else:
         raise ValueError(f"Unknown provider: {provider}. Use 'gemini'.")
 

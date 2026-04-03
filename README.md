@@ -52,10 +52,7 @@ pip install -r requirements.txt
 ```
 > **Note:** This may take a few minutes
 
-4. Set your API key in an .env file:
-```bash
-export GEMINI_API_KEY="your-key-here"
-```
+4. Create a `.env` file containing `export GEMINI_API_KEY=your-key-here`
 
 ## How to Run
 
@@ -121,7 +118,7 @@ python main.py --theme 3
 
 2. **Select** ([selector.py](selector.py)) — Uses `sentence-transformers` (`all-MiniLM-L6-v2`) to compute semantic similarity between chapter themes and notebook content. Notebooks are ranked by cosine similarity to the theme embedding, and the top N (default: 3) are chosen. Within those notebooks, individual cells are also scored and filtered by a relevance threshold.
 
-3. **Generate** ([generate.py](generate.py)) — LLM pipeline using Google Gemini:
+3. **Generate** ([generate.py](generate.py)) — LLM pipeline using Google Gemini (`gemini-3.1-flash-lite-preview`):
    1. Generate an **outline** following the one specified in the assignment document
    2. Generate each **section** independently, with the outline as shared context
    3. **Assemble** the sections into a markdown chapter with a generated table of contents
@@ -150,7 +147,7 @@ The `sentence-transformers` library was chosen because it runs entirely locally 
 
 #### Why Gemini for Generation?
 
-Google Gemini was chosen mainly because it offers a free API tier. The `gemini-3.1-flash-lite-preview` model provides a good balance of output quality and speed for chapter-length generation tasks, while its generous context window comfortably handles the source material from multiple notebooks. The `create_backend` factory in `generate.py` is designed so that additional providers could be added in the future.
+Google Gemini was chosen mainly because it offers a free API tier. The `gemini-3.1-flash-lite-preview` model provides a good balance of output quality and speed and offers a large context window to handle long source material. It also offers lots of free tokens. The `create_backend` factory in `generate.py` is designed so that additional providers could be added in the future.
 
 ### Tools and Models Used
 
@@ -163,7 +160,7 @@ Google Gemini was chosen mainly because it offers a free API tier. The `gemini-3
 ## Tradeoffs and Limitations
 
 - **Fixed theme set:** The tool uses 4 pre-defined themes and descriptions rather than allowing the user to choose *any* theme and generate a description. This keeps selection deterministic and avoids an extra LLM call, but limits flexibility.
-- **No cross-section consistency:** Each section is generated independently. While the shared outline provides coherence, some overlap between sections is possible. There's also no coherence check after the chapter is assembled to ensure everything flows.
+- **Limited cross-section consistency:** Each section is generated independently. While the shared outline provides coherence, some overlap between sections is possible. There's also no coherence check after the chapter is assembled to ensure everything flows.
 - **Single LLM provider:** Currently only supports Google Gemini. But, the `create_backend` factory is designed for extensibility but only one provider is implemented. 
 
 ## Scaling for Daily Production Runs

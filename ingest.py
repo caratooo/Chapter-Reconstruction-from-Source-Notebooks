@@ -32,20 +32,39 @@ class NotebookContent:
 
 
 def fetch_repo() -> str:
+    # Check that git is available before attempting any operations
+    try:
+        subprocess.run(
+            ["git", "--version"], capture_output=True, check=True,
+        )
+    except FileNotFoundError:
+        raise RuntimeError(
+            "Git is not installed or not on PATH. "
+            "Install it from https://git-scm.com/ and try again."
+        )
+
     clone_dir = _DEFAULT_CLONE_DIR
     if os.path.isdir(os.path.join(clone_dir, ".git")):
         print(f"  Updating cached repo at {clone_dir} ...")
-        subprocess.run(
-            ["git", "-C", clone_dir, "pull", "--ff-only", "--quiet"],
-            check=True,
-        )
+        try:
+            subprocess.run(
+                ["git", "-C", clone_dir, "pull", "--ff-only", "--quiet"],
+                check=True,
+            )
+        except subprocess.CalledProcessError:
+            print("  Warning: git pull failed, using existing cached repo.")
     else:
         print(f"  Cloning {HANDSON_ML3_URL} into {clone_dir} ...")
         os.makedirs(clone_dir, exist_ok=True)
-        subprocess.run(
-            ["git", "clone", "--depth=1", "--quiet", HANDSON_ML3_URL, clone_dir],
-            check=True,
-        )
+        try:
+            subprocess.run(
+                ["git", "clone", "--depth=1", "--quiet", HANDSON_ML3_URL, clone_dir],
+                check=True,
+            )
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(
+                f"Failed to clone repository. Check your network connection.\n{e}"
+            )
     return clone_dir
 
 
@@ -124,7 +143,10 @@ def _is_setup_boilerplate(source: str) -> bool:
 def parse_notebook(filepath: str, strip_outputs: bool = True) -> NotebookContent:
     """Parse a single .ipynb file into structured content."""
     with open(filepath, "r", encoding="utf-8") as f:
-        nb = json.load(f)
+        try:
+            nb = json.load(f)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON in notebook {filepath}: {e}")
 
     raw_cells_list = nb.get("cells", [])
     cells = []
@@ -192,6 +214,11 @@ def ingest_all(repo_path: str, pattern: str = "[0-9]*.ipynb") -> list[NotebookCo
     """Ingest all matching notebooks from the repository."""
     notebooks = []
     paths = sorted(glob.glob(os.path.join(repo_path, pattern)))
+    if not paths:
+        raise FileNotFoundError(
+            f"No notebooks matching '{pattern}' found in {repo_path}. "
+            "Check that the repository was cloned correctly."
+        )
     for p in paths:
         try:
             nb = parse_notebook(p)
