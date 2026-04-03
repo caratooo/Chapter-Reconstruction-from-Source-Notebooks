@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
+import re
 import sys
 import time
 from dotenv import load_dotenv
@@ -76,8 +77,14 @@ def main():
         model_name=args.model,
     )
 
-    # Write output (never overwrite an existing file)
-    output_path = args.output
+    # Build output path from theme name if user didn't specify a custom path
+    if args.output == "output/chapter.md":
+        slug = re.sub(r"[^\w]+", "_", material.theme_name).strip("_").lower()
+        output_path = f"output/{slug}.md"
+    else:
+        output_path = args.output
+
+    # Never overwrite an existing file
     if os.path.exists(output_path):
         base, ext = os.path.splitext(output_path)
         counter = 1

@@ -1,5 +1,4 @@
 import numpy as np
-import re
 from collections import Counter
 from dataclasses import dataclass, field
 from typing import Optional

@@ -1,4 +1,3 @@
-import os
 import re
 import time
 from selector import SelectedMaterial
