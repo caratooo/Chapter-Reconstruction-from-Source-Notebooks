@@ -201,8 +201,8 @@ def _generate_toc(sections: dict[str, str]) -> str:
         for line in content.split("\n"):
             if line.startswith("### "):
                 sub_title = line.replace("### ", "").strip()
-                # Strip any existing numbering (e.g. "3.1 Title" -> "Title")
-                sub_title = re.sub(r"^\d+\.\d+\s+", "", sub_title)
+                # Strip any existing numbering (e.g. "3.1 Title", "1. Title", "3.1. Title")
+                sub_title = re.sub(r"^\d+(\.\d+)*\.?\s+", "", sub_title)
                 toc_lines.append(f"   - {section_number}.{subsection_num}. {sub_title}")
                 subsection_num += 1
 

@@ -30,8 +30,6 @@ def main():
                         help="Path to a local handson-ml3 clone (auto-cloned if omitted)")
     parser.add_argument("--provider", type=str, default="gemini", choices=["gemini", "anthropic"],
                         help="LLM provider: 'gemini' or 'anthropic' (default: gemini)")
-    parser.add_argument("--api-key", type=str, default=None,
-                        help="API key (or set GEMINI_API_KEY env var)")
     parser.add_argument("--model", type=str, default=None,
                         help="Model name (default: provider-specific)")
     parser.add_argument("--theme", type=int, default=None,
@@ -40,8 +38,6 @@ def main():
                         help="Output file path (default: output/chapter.md)")
     parser.add_argument("--top-notebooks", type=int, default=3,
                         help="Number of top notebooks to select (default: 3)")
-    # parser.add_argument("--no-sentence-transformers", action="store_true",
-    #                     help="Force TF-IDF selector instead of sentence-transformers")
     parser.add_argument("--list-themes", action="store_true",
                         help="List available themes and exit")
 
@@ -54,9 +50,9 @@ def main():
             print(f"      {theme['description'][:100]}...")
         sys.exit(0)
 
-    api_key = args.api_key or API_KEY
+    api_key = API_KEY
     if not api_key:
-        print(f"Error: Provide --api-key or set the appropriate env var.")
+        print(f"Error: Set the appropriate env var.")
         sys.exit(1)
 
     start_time = time.time()

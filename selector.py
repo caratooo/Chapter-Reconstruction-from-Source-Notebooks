@@ -105,7 +105,7 @@ class SentenceTransformerSelector:
     def score_notebooks(self, notebooks: list[NotebookContent], theme: dict) -> list[tuple[NotebookContent, float]]:
         theme_text = theme["description"] + " " + " ".join(theme["seed_keywords"])
         theme_emb = self._embed([theme_text])[0]
-        nb_texts = [nb.title + ". " + nb.markdown_text[:500] for nb in notebooks]
+        nb_texts = [nb.title + ". " + nb.markdown_text for nb in notebooks]
         nb_embs = self._embed(nb_texts)
         scored = [(nb, self._cosine_sim(theme_emb, emb)) for nb, emb in zip(notebooks, nb_embs)]
         scored.sort(key=lambda x: x[1], reverse=True)
@@ -114,7 +114,7 @@ class SentenceTransformerSelector:
     def score_sections(self, cells: list[Cell], theme: dict) -> list[float]:
         theme_text = theme["description"] + " " + " ".join(theme["seed_keywords"])
         theme_emb = self._embed([theme_text])[0]
-        texts = [c.source[:300] for c in cells]
+        texts = [c.source for c in cells]
         embs = self._embed(texts)
         return [self._cosine_sim(theme_emb, emb) for emb in embs]
 
