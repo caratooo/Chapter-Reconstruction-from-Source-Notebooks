@@ -98,9 +98,9 @@ python main.py --theme 3
 
 **Output:** See [output/example_output.md](output/example_output.md) for a full generated chapter.
 
-## Design Decisions
+## Architecture
 
-### Architecture
+### E2E Flow
 
 ```
 ┌─────────────┐     ┌──────────────────┐     ┌──────────────────┐     ┌──────────────┐
