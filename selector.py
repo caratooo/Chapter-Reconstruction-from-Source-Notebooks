@@ -1,18 +1,10 @@
-"""
-Stage 2: Semantic Selection
-Uses sentence-transformers for embedding-based relevance scoring (preferred).
-Selects notebooks and sections that form a coherent chapter theme.
-"""
-
 import numpy as np
 import re
 from collections import Counter
 from dataclasses import dataclass, field
 from typing import Optional
-
 from ingest import NotebookContent, Cell
 from sentence_transformers import SentenceTransformer
-
 
 # Pre-defined chapter themes
 CANDIDATE_THEMES = [

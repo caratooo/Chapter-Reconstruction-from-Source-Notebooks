@@ -10,16 +10,28 @@ from typing import Optional
 HANDSON_ML3_URL = "https://github.com/ageron/handson-ml3"
 _DEFAULT_CLONE_DIR = os.path.join(tempfile.gettempdir(), "handson-ml3-cache")
 
+@dataclass
+class Cell:
+    cell_type: str  # "markdown" or "code"
+    source: str
+    heading_level: Optional[int] = None  # 1-6 if it's a heading cell
+    heading_text: Optional[str] = None
 
-def fetch_repo(repo_path: str | None) -> str:
-    """
-    Return a local path to the handson-ml3 repo.
-    - If repo_path is given and exists, use it as-is.
-    - Otherwise clone/update into a temp cache directory.
-    """
-    if repo_path and os.path.isdir(repo_path):
-        return repo_path
+@dataclass
+class NotebookContent:
+    notebook_id: str
+    filepath: str
+    title: str
+    cells: list[Cell] = field(default_factory=list)
+    markdown_text: str = ""  # all markdown concatenated
+    code_text: str = ""  # all code concatenated
 
+    @property
+    def full_text(self) -> str:
+        return self.markdown_text + "\n" + self.code_text
+
+
+def fetch_repo() -> str:
     clone_dir = _DEFAULT_CLONE_DIR
     if os.path.isdir(os.path.join(clone_dir, ".git")):
         print(f"  Updating cached repo at {clone_dir} ...")
@@ -35,28 +47,6 @@ def fetch_repo(repo_path: str | None) -> str:
             check=True,
         )
     return clone_dir
-
-
-@dataclass
-class Cell:
-    cell_type: str  # "markdown" or "code"
-    source: str
-    heading_level: Optional[int] = None  # 1-6 if it's a heading cell
-    heading_text: Optional[str] = None
-
-
-@dataclass
-class NotebookContent:
-    notebook_id: str
-    filepath: str
-    title: str
-    cells: list[Cell] = field(default_factory=list)
-    markdown_text: str = ""  # all markdown concatenated
-    code_text: str = ""  # all code concatenated
-
-    @property
-    def full_text(self) -> str:
-        return self.markdown_text + "\n" + self.code_text
 
 
 def _extract_title(cells: list[Cell], raw_cells: list[dict], filename: str) -> str:
@@ -211,9 +201,3 @@ def ingest_all(repo_path: str, pattern: str = "[0-9]*.ipynb") -> list[NotebookCo
         except Exception as e:
             print(f"  Warning: Could not parse {p}: {e}")
     return notebooks
-
-
-if __name__ == "__main__":
-    nbs = ingest_all("../handson-ml3")
-    for nb in nbs:
-        print(f"{nb.notebook_id}: {nb.title} ({len(nb.cells)} cells)")

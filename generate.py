@@ -1,25 +1,13 @@
-"""
-Stage 3: Chapter Generation
-Uses Gemini to generate a coherent chapter via multi-step LLM pipeline:
-  1. Generate outline from source material
-  2. Write each section with relevant context
-  3. Assemble final chapter
-"""
-
 import os
 import re
 import time
 from selector import SelectedMaterial
 from google import genai
 
-# ── Constants ──────────────────────────────────────────────────────────────────
-
 CHAPTER_SYSTEM_PROMPT = """You are a technical writer creating a chapter for a machine learning textbook.
-Write in a clear, authoritative, yet accessible style. Use precise technical language.
-Include code examples where they illustrate key concepts.
+Write in a clear, accessible style. Use precise technical language.
+Include code examples when they illustrate key concepts.
 Do NOT include any preamble like "Here is..." — just output the requested content directly."""
-
-# ── LLM Backend ───────────────────────────────────────────────────────────────
 
 class GeminiBackend:
     """Google Gemini API backend (using google-genai SDK)."""
@@ -58,7 +46,6 @@ def create_backend(provider: str, api_key: str, model_name: str = None):
     else:
         raise ValueError(f"Unknown provider: {provider}. Use 'gemini'.")
 
-# ── Source Material Preparation ───────────────────────────────────────────────
 
 def _prepare_source_material(material: SelectedMaterial, max_chars: int = 80000) -> str:
     """Build a condensed version of notebook content for the LLM."""
@@ -92,8 +79,6 @@ def _prepare_source_material(material: SelectedMaterial, max_chars: int = 80000)
 
     return full_text
 
-
-# ── Generation Steps ─────────────────────────────────────────────────────────
 
 def _generate_outline(backend, material: SelectedMaterial, source_material: str) -> str:
     """Step 1: Generate chapter outline from source material."""
@@ -187,8 +172,6 @@ def _generate_section(
     return backend.generate(prompt, system=CHAPTER_SYSTEM_PROMPT)
 
 
-# ── TOC & Cleanup ─────────────────────────────────────────────────────────────
-
 def _generate_toc(sections: dict[str, str]) -> str:
     """Generate a table of contents from the written sections."""
     toc_lines = []
@@ -223,8 +206,6 @@ def _clean_chapter(text: str) -> str:
     text = text.strip() + "\n"
     return text
 
-
-# ── Main Entry Point ─────────────────────────────────────────────────────────
 
 def generate_chapter(
     material: SelectedMaterial,

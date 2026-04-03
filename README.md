@@ -66,7 +66,7 @@ python main.py
 # List available themes
 python main.py --list-themes
 
-# Full example with all options
+# Full example with more options
 python main.py --theme 0 --top-notebooks 4 --output output/chapter.md
 ```
 
@@ -74,7 +74,6 @@ python main.py --theme 0 --top-notebooks 4 --output output/chapter.md
 
 | Argument | Default | Description |
 |---|---|---|
-| `--repo` | *(auto-clones)* | Path to a local `handson-ml3` clone. If omitted, clones to a temp directory. |
 | `--provider` | `gemini` | Only one LLM provider (`gemini`) right now |
 | `--model` | `gemini-3.1-flash-lite-preview` | Model name to use |
 | `--theme` | *(interactive)* | Theme index (0-3). If omitted, prompts for selection. |
@@ -82,7 +81,7 @@ python main.py --theme 0 --top-notebooks 4 --output output/chapter.md
 | `--output` | `output/chapter.md` | Output file path (auto-increments if file exists) |
 | `--list-themes` | — | Print available themes and exit |
 
-### Available Themes
+### Current Available Themes
 
 | Index | Theme |
 |---|---|
@@ -125,9 +124,17 @@ python main.py --theme 3
 3. **Generate** ([generate.py](generate.py)) — LLM pipeline using Google Gemini:
    1. Generate an **outline** following the one specified in the assignment document
    2. Generate each **section** independently, with the outline as shared context
-   3. **Assemble** the sections into a chapter with a generated table of contents
+   3. **Assemble** the sections into a markdown chapter with a generated table of contents
 
 ### Design Decisions
+
+#### Why a CLI Tool?
+
+A CLI tool keeps the interface minimal, runs anywhere with a Python environment, and makes the entire pipeline reproducible with a single command. There's no UI or server to manage.
+
+#### Why Theme Selection?
+
+Having the user select a theme rather than manually picking notebooks was because the chapter generated would be theme-based, instead of a summary of different notebooks. In a manual selection approach, the user would choose which notebooks to include and get a summary of whatever they picked. Instead, theme-based has the system figure out which source material is most relevant to the user's topic. This is more like information retrieval.
 
 #### Why Embeddings?
 
@@ -155,25 +162,21 @@ Google Gemini was chosen mainly because it offers a free API tier. The `gemini-3
 
 ## Tradeoffs and Limitations
 
-- **Fixed theme set:** The tool uses 4 pre-defined themes and descriptions rather than allowing the user to choose any theme and generate a description. This keeps selection deterministic and avoids an extra LLM call, but limits flexibility.
-- **Truncation of source material:** Long notebooks are truncated to fit within LLM context windows (80K chars for preparation, 15K for outline, 20K for non-core sections). Some relevant content may be lost.
-- **No cross-section consistency enforcement:** Each section is generated independently. While the shared outline provides coherence, some overlap between sections is possible.
-- **Single LLM provider:** Currently only supports Google Gemini. The `create_backend` factory is designed for extensibility but only one provider is implemented.
+- **Fixed theme set:** The tool uses 4 pre-defined themes and descriptions rather than allowing the user to choose *any* theme and generate a description. This keeps selection deterministic and avoids an extra LLM call, but limits flexibility.
+- **No cross-section consistency:** Each section is generated independently. While the shared outline provides coherence, some overlap between sections is possible. There's also no coherence check after the chapter is assembled to ensure everything flows.
+- **Single LLM provider:** Currently only supports Google Gemini. But, the `create_backend` factory is designed for extensibility but only one provider is implemented. 
 
 ## Scaling for Daily Production Runs
 
 ### Reducing Cost
 - **Cache embeddings:** Notebook embeddings only change when the notebook content changes. Store embeddings keyed by a content hash and recompute only when notebooks are modified.
-- **Cache generated sections:** If the same source material is selected for a theme, reuse previously generated sections rather than re-generating.
-- **Use cheaper models for outline generation:** The outline step is less quality-sensitive than section writing — a smaller/cheaper model could handle it.
+- **Use cheaper models for outline generation:** The outline step is less quality-sensitive than section writing so a smaller/cheaper model could handle it.
 
 ### Improving Latency and Reliability
-- **Parallelize section generation:** The 6 sections are independent once the outline exists. Generate them concurrently instead of sequentially.
-- **Add retry logic with exponential backoff:** Already partially implemented for rate limits and 503s, but could be more robust with circuit breakers and fallback models.
+- **Parallelize section generation:** The 6 sections are independent once the outline exists, so we can generate them in parallel instead of sequentially.
+- **Retry logic and backup models:** Already implemented rate limits and some error checking, but can add fallback models as well.
 - **Pre-clone and index the repository:** Instead of cloning on each run, maintain a persistent local mirror updated via cron/webhook.
 
 ### Architectural Changes
-- **Move to an async pipeline:** Use `asyncio` or a task queue (Celery) to parallelize ingestion, embedding, and generation stages.
-- **Add a content-addressed cache layer:** Hash notebook content and theme parameters to create cache keys. Skip recomputation when inputs haven't changed.
-- **Decouple stages with a message queue:** Run ingest, select, and generate as independent services that communicate via a queue, enabling horizontal scaling and independent deployment.
-- **Implement incremental updates:** Track which notebooks changed since the last run and only re-ingest and re-embed those, merging with cached results for unchanged notebooks.
+- **Add a notebook content cache:** Hash each notebook's content and store its embeddings and generated sections keyed by that hash.
+- **Add other LLM providers:** Add additional LLM backends to support more model possibilities.

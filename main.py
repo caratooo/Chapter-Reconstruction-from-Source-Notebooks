@@ -1,19 +1,8 @@
 #!/usr/bin/env python3
-"""
-Chapter Reconstruction Tool
-Generates coherent technical chapters from Jupyter notebooks using
-semantic selection (sentence-transformers or TF-IDF) and LLM generation (Gemini or Anthropic).
-
-Usage:
-    python main.py --repo /path/to/handson-ml3 --provider gemini --api-key KEY
-    python main.py --repo /path/to/handson-ml3 --provider anthropic --api-key KEY --theme 0
-"""
-
 import argparse
 import os
 import sys
 import time
-
 from dotenv import load_dotenv
 from ingest import ingest_all, fetch_repo
 from selector import run_selection, CANDIDATE_THEMES
@@ -26,10 +15,8 @@ def main():
     parser = argparse.ArgumentParser(
         description="Generate a technical chapter from Jupyter notebooks"
     )
-    parser.add_argument("--repo", type=str, default=None,
-                        help="Path to a local handson-ml3 clone (auto-cloned if omitted)")
-    parser.add_argument("--provider", type=str, default="gemini", choices=["gemini", "anthropic"],
-                        help="LLM provider: 'gemini' or 'anthropic' (default: gemini)")
+    parser.add_argument("--provider", type=str, default="gemini",
+                        help="LLM provider (default: gemini)")
     parser.add_argument("--model", type=str, default=None,
                         help="Model name (default: provider-specific)")
     parser.add_argument("--theme", type=int, default=None,
@@ -61,7 +48,7 @@ def main():
     print("\n" + "=" * 60)
     print("Stage 1: Ingesting Notebooks")
     print("=" * 60)
-    repo_path = fetch_repo(args.repo)
+    repo_path = fetch_repo()
     notebooks = ingest_all(repo_path)
     print(f"\n  Total: {len(notebooks)} notebooks ingested")
 
