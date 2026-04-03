@@ -160,19 +160,21 @@ Google Gemini was chosen mainly because it offers a free API tier. The `gemini-3
 ## Tradeoffs and Limitations
 
 - **Fixed theme set:** The tool uses 4 pre-defined themes and descriptions rather than allowing the user to choose *any* theme and generate a description. This keeps selection deterministic and avoids an extra LLM call, but limits flexibility.
+- **Simple embedding model + similarity check**: Instead of using a more robust embedding model or add additional scoring/ranking methods, I opted for just a faster embedding model with cosine similarity. I traded accuracy for speed and cost.
 - **Limited cross-section consistency:** Each section is generated independently. While the shared outline provides coherence, some overlap between sections is possible. There's also no coherence check after the chapter is assembled to ensure everything flows.
-- **Single LLM provider:** Currently only supports Google Gemini. But, the `create_backend` factory is designed for extensibility but only one provider is implemented. 
+- **Single LLM provider:** Currently only supports Google Gemini. (but, the `create_backend` factory is designed for extensibility but only one provider is implemented)
 
 ## Scaling for Daily Production Runs
 
 ### Reducing Cost
 - **Cache embeddings:** Notebook embeddings only change when the notebook content changes. Store embeddings keyed by a content hash and recompute only when notebooks are modified.
 - **Use cheaper models for outline generation:** The outline step is less quality-sensitive than section writing so a smaller/cheaper model could handle it.
+- **Prompt compression**: Right now, some prompts are ultra long and get a lot of source material. Summarizing or chunking the material allows for fewer token use, thus reducing cost.
 
 ### Improving Latency and Reliability
-- **Parallelize section generation:** The 6 sections are independent once the outline exists, so we can generate them in parallel instead of sequentially.
-- **Retry logic and backup models:** Already implemented rate limits and some error checking, but can add fallback models as well.
-- **Pre-clone and index the repository:** Instead of cloning on each run, maintain a persistent local mirror updated via cron/webhook.
+- **Parallel section generation:** The 6 sections are independent once the outline exists, so we can generate them in parallel instead of sequentially.
+- **Retry/timeout logic and backup models:** Already implemented rate limits and some error checking, but can add fallback models and timeout checks as well.
+- **Pre-clone and index the repository:** Instead of cloning the notebook repo each run, use some webhook that maintains a local mirror.
 
 ### Architectural Changes
 - **Add a notebook content cache:** Hash each notebook's content and store its embeddings and generated sections keyed by that hash.
