@@ -76,6 +76,7 @@ python main.py --theme 0 --top-notebooks 4 --output output/chapter.md
 | `--theme` | *(interactive)* | Theme index (0-3). If omitted, prompts for selection. |
 | `--top-notebooks` | `3` | Number of top-scoring notebooks to select |
 | `--output` | `output/chapter.md` | Output file path (auto-increments if file exists) |
+| `--section-threshold` | `0.05` | Threshold for similarity score to keep
 | `--list-themes` | — | Print available themes and exit |
 
 ### Current Available Themes

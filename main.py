@@ -26,6 +26,8 @@ def main():
                         help="Output file path (default: output/chapter.md)")
     parser.add_argument("--top-notebooks", type=int, default=3,
                         help="Number of top notebooks to select (default: 3)")
+    parser.add_argument("--section-threshold", type=float, default=0.05,
+                        help="Minimum relevance score for sections (default: 0.05)")
     parser.add_argument("--list-themes", action="store_true",
                         help="List available themes and exit")
 
@@ -63,6 +65,7 @@ def main():
             notebooks,
             theme_index=args.theme,
             top_n_notebooks=args.top_notebooks,
+            section_threshold=args.section_threshold,
         )
         print(f"\n  Theme: {material.theme_name}")
         print(f"  Notebooks: {material.selected_notebooks}")
