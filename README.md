@@ -2,24 +2,13 @@
 
 ## Table of Contents
 - [Setup Instructions](#setup-instructions)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
 - [How to Run](#how-to-run)
-  - [CLI Arguments](#cli-arguments)
-  - [Available Themes](#available-themes)
   - [Example Input and Output](#example-input-and-output)
-- [Design Decisions](#design-decisions)
-  - [Architecture](#architecture)
-  - [Why Embeddings?](#why-embeddings)
-  - [Why a Multi-Step Generation Pipeline?](#why-a-multi-step-generation-pipeline)
-  - [Why Sentence-Transformers for Selection?](#why-sentence-transformers-for-selection)
-  - [Why Gemini for Generation?](#why-gemini-for-generation)
-  - [Tools and Models Used](#tools-and-models-used)
+- [Architecture](#architecture)
+  - [Design Decisions](#design-decisions)
+  - [Tools Used](#tools-and-models-used)
 - [Tradeoffs and Limitations](#tradeoffs-and-limitations)
 - [Scaling for Daily Production Runs](#scaling-for-daily-production-runs)
-  - [Reducing Cost](#reducing-cost)
-  - [Improving Latency and Reliability](#improving-latency-and-reliability)
-  - [Architectural Changes](#architectural-changes)
 
 ## Setup Instructions
 
